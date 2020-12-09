@@ -1,0 +1,66 @@
+---
+- name: My first playbook
+  hosts:  webservers
+  become:  true
+  tasks:
+  - name: Install apache https (state=present is optional)
+    apt:
+      name: apache2
+      state: present
+      
+      
+      
+      
+     ---
+- name: installing and launching metricbeat
+  hosts: webservers
+  become: yes
+  tasks:
+
+   - name: download metricbeat deb
+     command: curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-7.4.0-amd64.deb
+
+   - name: install metricbeat deb
+     command: dpkg -i filebeat-7.4.0-amd64.deb
+
+   - name: drop in metricbeat.yml
+     copy:
+       src: /etc/ansible/files/metrickbeat-config.yml
+       dest: /etc/metricbeat/modules.d/docker.yml
+
+   - name: enable and configure docker module
+     command: metricbeat modules enable docker
+
+   - name: setup metric
+     command: metricbeat setup
+
+   - name: start metricbeat service
+     command: service metricbeat start
+     
+     
+     
+     ---
+- name: Installing and Launch Filebeat
+  hosts: webservers
+  become: yes
+  tasks:
+    # Use command module
+  - name: Download filebeat .deb file
+    command: curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.4.0-amd64.deb
+
+    # Use command module
+  - name: Install filebeat .deb
+    command: dpkg -i filebeat-7.4.0-amd64.deb
+
+    # Use copy module
+  - name: Drop in filebeat.yml
+    copy:
+      src: /etc/ansible/files/filebeat-config.yml
+      dest: /etc/filebeat/filebeat.yml
+
+    # Use command module
+  - name: Enable and Configure System Module
+    command: filebeat modules enable system
+
+    # Use command module
+  - name: Setup filebeat
